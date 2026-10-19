@@ -1,0 +1,30 @@
+{
+  "name": "tinder-bgg",
+  "private": true,
+  "type": "module",
+  "description": "Rank your board game collection with 1v1 duels, using data from BoardGameGeek.",
+  "engines": {
+    "node": ">=22"
+  },
+  "workspaces": [
+    "shared",
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "check": "npm run lint && npm run format:check && npm run typecheck"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.13.0",
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "^3.9.10",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.71.2"
+  }
+}
