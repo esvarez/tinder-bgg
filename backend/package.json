@@ -6,12 +6,15 @@
   "description": "API Gateway + Lambda backend, deployed with AWS SAM.",
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
-    "test": "vitest run"
-  },
-  "dependencies": {
-    "@tinder-bgg/shared": "*"
+    "test": "vitest run",
+    "build": "sam build",
+    "local": "sam build && sam local start-api"
   },
   "devDependencies": {
+    "@tinder-bgg/shared": "*",
+    "@types/aws-lambda": "^8.10.164",
+    "@types/node": "^22.20.5",
+    "esbuild": "^0.28.2",
     "vitest": "^5.0.5"
   }
 }
