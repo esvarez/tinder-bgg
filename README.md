@@ -12,8 +12,6 @@ This is an npm workspaces monorepo:
 | `backend/`  | `@tinder-bgg/backend`  | API Gateway + Lambda (TypeScript), deployed with AWS SAM      |
 | `frontend/` | `@tinder-bgg/frontend` | React + Vite + Tailwind single-page app                       |
 
-`frontend/` is a placeholder until it is scaffolded (#11).
-
 ## Requirements
 
 - Node.js 22 or later (see `.nvmrc`)
@@ -89,11 +87,37 @@ curl http://127.0.0.1:3000/health
 
 Functions set `CodeUri: src/` so that SAM skips `npm install` and esbuild bundles everything, including `@tinder-bgg/shared`, straight from the workspace.
 
+## Frontend
+
+The frontend in `frontend/` is a React 19 single-page app built with Vite, TypeScript and Tailwind CSS 4. It uses React Router for navigation and TanStack Query for fetching and caching API data.
+
+```sh
+cp frontend/.env.example frontend/.env.local   # then edit it
+npm run dev                                    # http://localhost:5173
+npm run build -w @tinder-bgg/frontend          # production build in frontend/dist
+```
+
+Configuration comes from `VITE_*` variables (Vite exposes nothing else to the browser). Put them in `frontend/.env.local`, which is git-ignored:
+
+| Variable                    | Purpose                                                             |
+| --------------------------- | ------------------------------------------------------------------- |
+| `VITE_API_URL`              | Base URL of the API: the `ApiUrl` output of the SAM stack           |
+| `VITE_COGNITO_USER_POOL_ID` | Cognito User Pool id, from the stack outputs (#38); used by sign-in |
+| `VITE_COGNITO_CLIENT_ID`    | Cognito app client id (#38)                                         |
+| `VITE_COGNITO_DOMAIN`       | Cognito hosted UI domain (#38)                                      |
+
+Layout:
+
+- `src/App.tsx` defines the routes: `/` (Collection), `/add`, `/duel`, `/ranking`, `/stats`, and `/login` without the navigation. The pages are placeholders; each one names the issue that builds it.
+- `src/lib/api.ts` is the typed API client. It reads `VITE_API_URL` and sends `Authorization: Bearer <token>` once sign-in (#37) calls `setTokenProvider`. Failed requests throw an `ApiError` carrying the HTTP status. Add one method per endpoint as its feature is built, using the types from `@tinder-bgg/shared`.
+- `src/lib/queryClient.ts` configures TanStack Query. It doesn't retry 4xx errors, which would only repeat the same failure.
+- Tests use Vitest, jsdom and Testing Library (`npm test -w @tinder-bgg/frontend`).
+
 ## Continuous integration
 
 `.github/workflows/ci.yml` runs on every pull request and on pushes to `main`:
 
-- **Lint, format, typecheck and test:** `npm ci`, then the same scripts as `npm run check`. Workspaces opt into tests by adding a `test` script.
+- **Lint, format, typecheck and test:** `npm ci`, then the same scripts as `npm run check`, then a production build of the frontend. Workspaces opt into tests by adding a `test` script.
 - **Validate SAM template:** runs `sam validate --lint` and `sam build` on `backend/template.yaml`.
 
 ## Shared types
