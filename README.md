@@ -30,14 +30,22 @@ npm run check
 
 Run from the repository root:
 
-| Script                 | What it does                               |
-| ---------------------- | ------------------------------------------ |
-| `npm run lint`         | Lint every package with ESLint             |
-| `npm run lint:fix`     | Lint and apply automatic fixes             |
-| `npm run format`       | Format every file with Prettier            |
-| `npm run format:check` | Check formatting without writing           |
-| `npm run typecheck`    | Type-check every workspace                 |
-| `npm run check`        | Lint, check formatting and type-check (CI) |
+| Script                 | What it does                                |
+| ---------------------- | ------------------------------------------- |
+| `npm run lint`         | Lint every package with ESLint              |
+| `npm run lint:fix`     | Lint and apply automatic fixes              |
+| `npm run format`       | Format every file with Prettier             |
+| `npm run format:check` | Check formatting without writing            |
+| `npm run typecheck`    | Type-check every workspace                  |
+| `npm test`             | Run unit tests in every workspace           |
+| `npm run check`        | Lint, check formatting, type-check and test |
+
+## Continuous integration
+
+`.github/workflows/ci.yml` runs on every pull request and on pushes to `main`:
+
+- **Lint, format, typecheck and test:** `npm ci`, then the same scripts as `npm run check`. Workspaces opt into tests by adding a `test` script.
+- **Validate SAM template:** runs `sam validate --lint` on `backend/template.yaml`. It is skipped until the template exists (#9).
 
 ## Shared types
 

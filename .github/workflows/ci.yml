@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  check:
+    name: Lint, format, typecheck and test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Unit tests
+        run: npm test
+
+  sam-validate:
+    name: Validate SAM template
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      # The SAM template is added in #9; skip until it exists.
+      - name: Check for template
+        id: template
+        run: |
+          if [ -f backend/template.yaml ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "No backend/template.yaml yet, skipping."
+          fi
+
+      - uses: aws-actions/setup-sam@v3
+        if: steps.template.outputs.exists == 'true'
+        with:
+          use-installer: true
+
+      - name: sam validate
+        if: steps.template.outputs.exists == 'true'
+        working-directory: backend
+        env:
+          AWS_DEFAULT_REGION: us-east-1
+        run: sam validate --lint
