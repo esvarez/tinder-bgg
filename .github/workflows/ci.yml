@@ -46,24 +46,23 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      # The SAM template is added in #9; skip until it exists.
-      - name: Check for template
-        id: template
-        run: |
-          if [ -f backend/template.yaml ]; then
-            echo "exists=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "No backend/template.yaml yet, skipping."
-          fi
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
 
       - uses: aws-actions/setup-sam@v3
-        if: steps.template.outputs.exists == 'true'
         with:
           use-installer: true
 
       - name: sam validate
-        if: steps.template.outputs.exists == 'true'
         working-directory: backend
         env:
           AWS_DEFAULT_REGION: us-east-1
         run: sam validate --lint
+
+      # Runs through npm so esbuild from node_modules is on the PATH.
+      - name: sam build
+        run: npm run build -w @tinder-bgg/backend
