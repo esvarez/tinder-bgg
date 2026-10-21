@@ -39,6 +39,9 @@ jobs:
       - name: Unit tests
         run: npm test
 
+      - name: Build frontend
+        run: npm run build -w @tinder-bgg/frontend
+
   sam-validate:
     name: Validate SAM template
     runs-on: ubuntu-latest
